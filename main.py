@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from src.routes import todos
+from src.routes import contacts
 
 from src.database.db import get_db
 
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(todos.router, prefix='/api')
+app.include_router(contacts.router, prefix='/api')
 
 
 @app.get("/")
