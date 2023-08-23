@@ -11,6 +11,9 @@ fastapi = {extras = ["all"], version = "^0.100.1"}
 sqlalchemy = "^2.0.19"
 alembic = "^1.11.2"
 asyncpg = "^0.28.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+libgravatar = "^1.0.4"
 
 
 [build-system]

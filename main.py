@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from src.routes import contacts
+from src.routes import contacts ,auth
 
 from src.database.db import get_db
 
@@ -16,8 +16,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(contacts.router, prefix='/api')
-
 
 @app.get("/")
 def read_root():

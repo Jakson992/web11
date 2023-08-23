@@ -1,43 +1,52 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database.models import User
 from src.schemas import ContactSchema, ContactUpdateSchema
 from src.repository import contacts
 from src.database.db import get_db
 from datetime import datetime, timedelta
 
+from src.services.auth import auth_service
+
 router = APIRouter()
 
 
 @router.get("/contacts/")
-async def get_contacts(limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db)):
+async def get_contacts(limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db),
+                       user : User = Depends(auth_service.get_current_user)):
     return await contacts.get_contacts(limit, offset, db)
 
 
 @router.get("/contacts/{contact_id}")
-async def get_contact(contact_id: int, db: AsyncSession = Depends(get_db)):
+async def get_contact(contact_id: int, db: AsyncSession = Depends(get_db),
+                       user : User = Depends(auth_service.get_current_user)):
     return await contacts.get_contact(contact_id, db)
 
 
 @router.post("/contacts/")
-async def create_contact(contact: ContactSchema, db: AsyncSession = Depends(get_db)):
+async def create_contact(contact: ContactSchema, db: AsyncSession = Depends(get_db),
+                       user : User = Depends(auth_service.get_current_user)):
     return await contacts.create_contact(contact, db)
 
 
 @router.put("/contacts/{contact_id}")
-async def update_contact(contact_id: int, contact: ContactUpdateSchema, db: AsyncSession = Depends(get_db)):
+async def update_contact(contact_id: int, contact: ContactUpdateSchema, db: AsyncSession = Depends(get_db),
+                       user : User = Depends(auth_service.get_current_user)):
     return await contacts.update_contact(contact_id, contact, db)
 
 
 @router.delete("/contacts/{contact_id}")
-async def remove_contact(contact_id: int, db: AsyncSession = Depends(get_db)):
+async def remove_contact(contact_id: int, db: AsyncSession = Depends(get_db),
+                       user : User = Depends(auth_service.get_current_user)):
     return await contacts.remove_contact(contact_id, db)
 
 
 @router.get("/contacts/search/")
 async def search_contacts(
         search: str = Query(..., description="Пошук за ім'ям, прізвищем або адресою електронної пошти"),
-        db: AsyncSession = Depends(get_db)):
+        db: AsyncSession = Depends(get_db),
+                       user : User = Depends(auth_service.get_current_user)):
     return await contacts.search_contacts(search, db)
 
 
