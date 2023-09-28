@@ -1,4 +1,9 @@
+import pickle
+
 from typing import Optional
+
+import redis as redis
+import redis as redis_db
 
 from jose import JWTError, jwt
 from fastapi import HTTPException, status, Depends
@@ -10,12 +15,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.db import get_db
 from src.repository import users as repository_users
 
+from src.conf.config import config
+
+
+
+# def hash_for_user(email: str):
+#     return f"user:{email}"
 
 class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     SECRET_KEY = "09b98f498a884121b3de73e2b4c07d3d9e1a68630658a7de57abb00165d70049"
     ALGORITHM = "HS256"
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+    cache = redis.Redis(host='localhost', port=6379, db=0)
+
+    def __init__(self):
+        self.redis = None
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -55,6 +70,25 @@ class Auth:
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
 
+    def create_email_token(self, data: dict):
+        to_encode = data.copy()
+        expire = datetime.utcnow() + timedelta(days=7)
+        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "email_token"})
+        token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return token
+
+    def get_email_from_token(self, token: str):
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            if payload['scope'] == 'email_token':
+                email = payload["sub"]
+                return email
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid scope for token')
+        except JWTError as e:
+            print(e)
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail="Invalid token for email verification")
+
     async def get_current_user(self, token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,9 +108,22 @@ class Auth:
         except JWTError as e:
             raise credentials_exception
 
-        user = await repository_users.get_user_by_email(email, db)
+        # user = await repository_users.get_user_by_email(email, db)
+        # if user is None:
+        #     raise credentials_exception
+
+        user = self.redis.get(f"user:{email}")
         if user is None:
-            raise credentials_exception
+            print('GET USER FROM POSTGRES')
+            user = await repository_users.get_user_by_email(email, db)
+            if user is None:
+                raise credentials_exception
+            self.redis.set(f"user:{email}", pickle.dumps(user))
+            self.redis.expire(f"user:{email}", 900)
+        else:
+            print('GET USER FROM CACHE')
+            user = pickle.loads(user)
+
         return user
 
 

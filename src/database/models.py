@@ -39,7 +39,7 @@ class User(Base):
     updated_at: Mapped[date] = mapped_column('updated_at', DateTime, default=func.now(), onupdate=func.now())
     avatar: Mapped[str] = Column(String(255), nullable=True)
     refresh_token: Mapped[str] = Column(String(255), nullable=True)
-
+    confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
 # class Todo(Base):
 #     __tablename__ = "todos"
 #     id: Mapped[int] = mapped_column(primary_key=True)

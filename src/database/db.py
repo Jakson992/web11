@@ -32,7 +32,7 @@ class DatabaseSessionManager:
             await session.close()
 
 
-sessionmanager = DatabaseSessionManager(config.DB_URL)
+sessionmanager = DatabaseSessionManager(config.sqlalchemy_database_url)
 
 
 # Dependency
