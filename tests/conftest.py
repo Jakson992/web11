@@ -20,7 +20,7 @@ sys.path.insert(
 )
 
 from main import app
-from database import get_session, DatabaseSessionManager, Base, User
+from database import get_db, DatabaseSessionManager, Base, User
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
