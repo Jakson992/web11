@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     cloudinary_api_key: str = "1234"
     cloudinary_api_secret: str = "213213"
 
+
     # model_config = ConfigDict(extra='ignore')
 
     class Config:
@@ -26,6 +27,8 @@ class Settings(BaseSettings):
         extra = 'ignore'
 
 
+DB_URL = "postgresql+asyncpg://postgres:567234@localhost:5432/contacts"
+# app_config = DB_URL
 config = Settings()
 
 # class Config:
