@@ -14,6 +14,7 @@ class SearchContactParams(BaseModel):
 
 class Contact(Base):
     __tablename__ = "contacts"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)  # Виправили тут
     first_name = Column(String, index=True)  # Виправили тут
@@ -31,6 +32,7 @@ class Contact(Base):
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {'extend_existing': True}
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50))
     email: Mapped[str] = mapped_column(String(250), nullable=False, unique=True)

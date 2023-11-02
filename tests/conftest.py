@@ -57,7 +57,7 @@ def client():
         finally:
             await session.close()
 
-    app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_db] = override_get_session
 
     yield TestClient(app)
 

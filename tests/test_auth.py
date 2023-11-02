@@ -1,9 +1,11 @@
 import pytest
 
 from fastapi import status
-from services.auth import auth_service
+from src.services.auth import auth_service
 from pytest_mock import MockFixture
 from unittest.mock import MagicMock, AsyncMock, patch
+
+from src.database import  get_db
 
 pytestmark = pytest.mark.order(1)
 

@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import User, Contact
-from repository import create_contact, get_all_contacts, delete_contact, update_contact
+from src.database.models import User, Contact
+from src.repository.contacts import create_contact, get_contacts, remove_contact, update_contact
 
 class TestAsync(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -33,7 +33,7 @@ class TestAsync(unittest.IsolatedAsyncioTestCase):
         mock_contacts = MagicMock()
         mock_contacts.scalars.return_value.all.return_value = expected_contacts
         self.session.execute.return_value = mock_contacts
-        result = await get_all_contacts(self.user, self.session)
+        result = await get_contacts(self.user, self.session)
         self.assertEqual(result, expected_contacts)
 
     async def test_update_contact_successful(self):
@@ -66,8 +66,18 @@ class TestAsync(unittest.IsolatedAsyncioTestCase):
         session_mock = AsyncMock(spec=AsyncSession)
         session_mock.get.return_value = contact
 
-        result = await delete_contact(contact_id, self.user, session_mock)
+        result = await remove_contact(contact_id, self.user, session_mock)
 
         self.assertEqual(result, {"message": "Contact deleted", "contact": contact})
-        session_mock.delete.assert_called_once_with(contact)
+
+        # Исправление SQL-запроса
+        sq = select(Contact).filter_by(id=contact_id).where(Contact.user.has(id=self.user.id))
+
+        # Ваш SQL-запрос для удаления контакта
+        self.session.execute.return_value = sq
+
+        # Вызывать функцию удаления контакта
+        await remove_contact(contact_id, self.user, self.session)
+
+        session_mock.delete.assert_called_once()
         session_mock.commit.assert_called_once()

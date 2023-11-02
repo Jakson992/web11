@@ -18,7 +18,7 @@ and returns the user with that email. If no such user exists, it returns None.
 :return: A user object
 :doc-author: Trelent
 """
-sq = select(User).filter_by(email=email)
+    sq = select(User).filter_by(email=email)
     result = await db.execute(sq)
     user = result.scalar_one_or_none()
     logging.info(user)
@@ -34,7 +34,7 @@ The create_user function creates a new user in the database.
 :return: A user object
 :doc-author: Trelent
 """
-avatar = None
+    avatar = None
     try:
         g = Gravatar(body.email)
         avatar = g.get_image()
@@ -57,7 +57,7 @@ The update_token function updates the refresh token for a user.
 :return: None
 :doc-author: Trelent
 """
-user.refresh_token = token
+    user.refresh_token = token
     await db.commit()
 
 
@@ -72,22 +72,7 @@ and sets the confirmed field of the user with that email to True.
 :return: None
 :doc-author: Trelent
 """
-user = await get_user_by_email(email, db)
+    user = await get_user_by_email(email, db)
     user.confirmed = True
     await db.commit()
 
-
-async def confirmed_email(email: str, db: AsyncSession) -> None:
-    """
-The confirmed_email function takes in an email and a database session,
-and sets the confirmed field of the user with that email to True.
-
-
-:param email: str: Get the email of the user
-:param db: AsyncSession: Pass in the database session to the function
-:return: None
-:doc-author: Trelent
-"""
-user = await get_user_by_email(email, db)
-    user.confirmed = True
-    await db.commit()
